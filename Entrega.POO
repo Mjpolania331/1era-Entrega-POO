@@ -1,0 +1,160 @@
+import random
+import time
+
+# 1. Registro del Jugador (Usuario y Contraseña)
+class Jugador:
+    def __init__(self, nombre_usuario, contraseña):
+        self.nombre_usuario = nombre_usuario
+        self.contraseña = contraseña
+        self.puntaje = 0
+
+    def actualizar_puntaje(self, puntos):
+        self.puntaje += puntos
+
+    def resetear_puntaje(self):
+        self.puntaje = 0
+
+# 2. Permitir al jugador elegir el nivel de dificultad
+# 3. Generar y distribuir las fichas aleatoriamente en el tablero
+# 4. Permitir que los jugadores elijan una temática de las fichas
+class Ficha:
+    def __init__(self, id_ficha, icono):
+        self.id = id_ficha
+        self.icono = icono
+        self.estado = False  # False = no volteada, True = volteada
+        self.pareja = None
+
+    def voltear_ficha(self):
+        self.estado = not self.estado  # Cambia el estado de la ficha
+
+    def comparar_ficha(self, otra_ficha):
+        return self.id == otra_ficha.id
+
+
+class Tablero:
+    def __init__(self, dificultad, tema):
+        self.fichas = []
+        self.tamaño = 0
+        self.tema = tema
+        self.temas = {
+            'Animales': ['🐶', '🐬', '🐥', '🐠'],
+            'Frutas': ['🍓', '🍌', '🍉', '🍍'],
+            'Emojis': ['🥰', '😱', '😎', '😋'],
+            'Objetos': ['🎈', '🧸', '💡', '📷'],
+        }
+        self.generar_tablero(dificultad)
+
+    def generar_tablero(self, dificultad):
+        tamanos = {'Facil': 4, 'Medio': 8, 'Dificil': 12}
+        self.tamaño = tamanos[dificultad]
+        self.fichas = []
+        for i in range(1, (self.tamaño * self.tamaño // 2) + 1):
+            icono = self.temas[self.tema][i % len(self.temas[self.tema])]
+            ficha1 = Ficha(i, icono)
+            ficha2 = Ficha(i, icono)
+            ficha1.pareja = ficha2
+            ficha2.pareja = ficha1
+            self.fichas.append(ficha1)
+            self.fichas.append(ficha2)
+        random.shuffle(self.fichas)  # Distribución aleatoria de las fichas
+
+    def mostrar_tablero(self):
+        for i, ficha in enumerate(self.fichas):
+            if ficha.estado:
+                print(f"| {ficha.icono} |", end=" ")
+            else:
+                print("| ? |", end=" ")
+            if (i + 1) % self.tamaño == 0:
+                print()  # Salto de línea para el formato del tablero
+
+    # 5. Permitir voltear solo dos fichas a la vez
+    # 6. Verificar si las dos fichas destapadas son iguales
+    # 7. Asignar o quitar puntos dependiendo del resultado
+    def voltear_fichas(self, indice1, indice2):
+        self.tablero.fichas[indice1].voltear_ficha()
+        self.tablero.fichas[indice2].voltear_ficha()
+        self.tablero.mostrar_tablero()
+        
+        time.sleep(4)  # Esperemos 4 segundos antes de voltearlas de nuevo
+        if not self.tablero.fichas[indice1].comparar_ficha(self.tablero.fichas[indice2]):
+            print("Las cartas no coinciden, Intentalo de nuevo.")
+            self.tablero.fichas[indice1].voltear_ficha()
+            self.tablero.fichas[indice2].voltear_ficha()
+            self.jugadores[self.turno_actual].actualizar_puntaje(-5)  # Penalización
+        else:
+            print("Has encontrado una Pareja!")
+            self.tablero.eliminar_pareja(self.tablero.fichas[indice1], self.tablero.fichas[indice2])
+            self.jugadores[self.turno_actual].actualizar_puntaje(10)
+
+    def iniciar_turno(self):
+        jugador_actual = self.jugadores[self.turno_actual]
+        print(f"Es el turno de {jugador_actual.nombre_usuario}")
+
+        tiempo_limite = {"Facil": 4, "Medio": 8, "Dificil": 12}
+        tiempo_restante = tiempo_limite[self.dificultad]
+
+        print(f"Tienes {tiempo_restante} segundos para voltear dos fichas.")
+        tiempo_inicio = time.time()
+
+        while time.time() - tiempo_inicio < tiempo_restante:
+            # Aquí el jugador debería ingresar los índices de las fichas para voltearlas
+            indice1 = int(input("Elige la primera ficha (índice): "))
+            indice2 = int(input("Elige la segunda ficha (índice): "))
+            self.voltear_fichas(indice1, indice2)
+            break
+
+        print("El tiempo ha terminado!")
+
+        self.alternar_turno()
+
+# 8. Registro de todos los usuarios con sus respectivas puntuaciones (tabla de posiciones)
+class Sistema:
+    def __init__(self):
+        self.jugadores_registrados = []
+        self.ranking = []
+
+    def registrar_jugador(self, nombre_usuario, contraseña):
+        jugador = Jugador(nombre_usuario, contraseña)
+        self.jugadores_registrados.append(jugador)
+        print(f"Jugador {nombre_usuario} registrado con éxito.")
+        return jugador
+
+    def mostrar_ranking(self):
+        self.ranking = sorted(self.jugadores_registrados, key=lambda x: x.puntaje, reverse=True)
+        print("Ranking de jugadores:")
+        for jugador in self.ranking:
+            print(f"{jugador.nombre_usuario}: {jugador.puntaje} puntos")
+
+    def guardar_puntuacion(self, jugador):
+        self.ranking.append(jugador)
+
+# 9. Permitir el juego multijugador (turnos alternos)
+class Juego:
+    def __init__(self, sistema):
+        self.jugadores = []
+        self.tablero = None
+        self.dificultad = None
+        self.turno_actual = 0
+        self.sistema = sistema
+
+    def agregar_jugador(self, jugador):
+        self.jugadores.append(jugador)
+
+    def elegir_dificultad(self, nivel):
+        self.dificultad = nivel
+        print(f"Has seleccionado la dificultad: {nivel}")
+
+    def elegir_tema(self, tema):
+        print(f"Tema '{tema}' seleccionado.")
+        return tema
+
+    def iniciar_juego(self):
+        tema = input("Elige un tema (Animales, Frutas, Emojis, Objetos): ")
+        self.tablero = Tablero(self.dificultad, tema)
+        print("El juego ha comenzado!")
+        self.tablero.mostrar_tablero()
+
+    # 9. Alternar el turno entre jugadores
+    def alternar_turno(self):
+        self.turno_actual = (self.turno_actual + 1) % len(self.jugadores)
+        print(f"Es el turno de {self.jugadores[self.turno_actual].nombre_usuario}")
