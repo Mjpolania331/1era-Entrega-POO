@@ -1,8 +1,6 @@
 import random
 
-# ------------------------------
 # Clase Jugador: Registro y autenticación
-# ------------------------------
 class Jugador:
     jugadores_registrados = {}
 
@@ -20,9 +18,7 @@ class Jugador:
         Jugador.jugadores_registrados[nombre_usuario] = nuevo_jugador
         return nuevo_jugador
 
-# ------------------------------
 # Clase Tablero: Configuración del juego
-# ------------------------------
 class Tablero:
     def __init__(self, dificultad, tema):
         self.fichas = []
@@ -76,9 +72,7 @@ class Tablero:
             raise ValueError("Tema no válido.")
         self.tema = tema
 
-# ------------------------------
 # Clase Ficha: Representa cada ficha del tablero
-# ------------------------------
 class Ficha:
     def __init__(self, id_ficha, icono):
         self.id_ficha = id_ficha
@@ -86,9 +80,7 @@ class Ficha:
         self.estado = False
         self.pareja = None
 
-# ------------------------------
 # Clase Juego: Gestión del flujo del juego
-# ------------------------------
 class Juego:
     def __init__(self):
         self.jugadores = []
