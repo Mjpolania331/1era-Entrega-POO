@@ -1,8 +1,5 @@
 from modelo_juego import Juego
 
-# ------------------------------
-# Funciones de la vista en consola
-# ------------------------------
 def mostrar_menu_principal():
     print("=== Bienvenido al Juego de Memoria ===")
     print("1. Crear una cuenta")
@@ -57,9 +54,7 @@ def iniciar_partida(juego, jugador):
     print("\nTablero de juego:")
     print(tablero)
 
-# ------------------------------
-# Programa principal
-# ------------------------------
+
 def main():
     juego = Juego()
     while True:
