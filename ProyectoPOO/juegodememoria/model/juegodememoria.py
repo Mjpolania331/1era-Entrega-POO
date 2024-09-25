@@ -1,6 +1,6 @@
 import random
 
-# Clase Jugador: Registro y autenticación
+# Clase Jugador: Maneja los jugadores y su registro
 class Jugador:
     jugadores_registrados = {}
 
@@ -8,91 +8,92 @@ class Jugador:
         self.nombre_usuario = nombre_usuario
         self.contraseña = contraseña
         self.puntaje = 0
-        self.tablero = None
 
     @staticmethod
-    def crear_cuenta(nombre_usuario, contraseña):
+    def registrar(nombre_usuario, contraseña):
         if nombre_usuario in Jugador.jugadores_registrados:
-            return None  # El nombre de usuario ya existe
-        nuevo_jugador = Jugador(nombre_usuario, contraseña)
-        Jugador.jugadores_registrados[nombre_usuario] = nuevo_jugador
-        return nuevo_jugador
+            return None  # Ya existe un jugador con ese nombre
+        jugador = Jugador(nombre_usuario, contraseña)
+        Jugador.jugadores_registrados[nombre_usuario] = jugador
+        return jugador
+
+    @staticmethod
+    def autenticar(nombre_usuario, contraseña):
+        jugador = Jugador.jugadores_registrados.get(nombre_usuario)
+        if jugador and jugador.contraseña == contraseña:
+            return jugador
+        return None
 
 # Clase Tablero: Configuración del juego
 class Tablero:
     def __init__(self, dificultad, tema):
+        self.dificultad = dificultad
+        self.tema = tema
         self.fichas = []
         self.tamaño = 0
-        self.tema = tema
-        self.dificultades = {
-            'Facil': (4, 60),    # 4x4 fichas, 60 segundos
-            'Medio': (6, 120),   # 6x6 fichas, 120 segundos
-            'Dificil': (8, 180)  # 8x8 fichas, 180 segundos
+        self.configurar_tablero()
+        self.distribuir_fichas_aleatoriamente()
+
+    def configurar_tablero(self):
+        dificultades = {
+            'Facil': 4,    # 4x4 fichas
+            'Medio': 6,    # 6x6 fichas
+            'Dificil': 8   # 8x8 fichas
         }
-        self.temas = {
+        if self.dificultad in dificultades:
+            self.tamaño = dificultades[self.dificultad]
+
+    def distribuir_fichas_aleatoriamente(self):
+        temas = {
             'Animales': ['🐶', '🐬', '🐥', '🐠'],
             'Frutas': ['🍓', '🍌', '🍉', '🍍'],
             'Emojis': ['🥰', '😱', '😎', '😋'],
             'Objetos': ['🎈', '🧸', '💡', '📷'],
         }
-        self.configurar_tablero(dificultad)
-
-    def configurar_tablero(self, dificultad):
-        if dificultad not in self.dificultades:
-            raise ValueError("Dificultad no válida.")
-        self.tamaño, self.tiempo_limite = self.dificultades[dificultad]
-
-    def distribuir_fichas_aleatoriamente(self):
         pares_necesarios = (self.tamaño * self.tamaño) // 2
-        self.fichas = []
+        fichas_seleccionadas = []
+        iconos = temas.get(self.tema, [])
 
         for i in range(pares_necesarios):
-            icono = self.temas[self.tema][i % len(self.temas[self.tema])]
-            ficha1 = Ficha(i, icono)
-            ficha2 = Ficha(i, icono)
-            ficha1.pareja = ficha2
-            ficha2.pareja = ficha1
-            self.fichas.extend([ficha1, ficha2])
+            icono = iconos[i % len(iconos)]
+            fichas_seleccionadas.extend([icono, icono])
 
-        random.shuffle(self.fichas)  # Mezclar fichas
+        random.shuffle(fichas_seleccionadas)
+        self.fichas = fichas_seleccionadas
 
     def mostrar_tablero(self):
-        tablero_visible = []
-        for i, ficha in enumerate(self.fichas):
-            if ficha.estado:
-                tablero_visible.append(f"| {ficha.icono} |")
-            else:
-                tablero_visible.append("| ? |")
-            if (i + 1) % self.tamaño == 0:
-                tablero_visible.append("\n")
-        return "".join(tablero_visible)
+        return self.fichas
 
-    def aplicar_tema(self, tema):
-        if tema not in self.temas:
-            raise ValueError("Tema no válido.")
-        self.tema = tema
-
-# Clase Ficha: Representa cada ficha del tablero
-class Ficha:
-    def __init__(self, id_ficha, icono):
-        self.id_ficha = id_ficha
-        self.icono = icono
-        self.estado = False
-        self.pareja = None
-
-# Clase Juego: Gestión del flujo del juego
-class Juego:
+# Clase Sistema: Controla el flujo general del juego
+class Sistema:
     def __init__(self):
-        self.jugadores = []
+        self.juegos_activos = []
 
     def registrar_jugador(self, nombre_usuario, contraseña):
-        jugador = Jugador.crear_cuenta(nombre_usuario, contraseña)
-        if jugador:
-            self.jugadores.append(jugador)
-        return jugador
+        return Jugador.registrar(nombre_usuario, contraseña)
 
-    def iniciar_partida(self, jugador, dificultad, tema):
-        jugador.tablero = Tablero(dificultad, tema)
-        jugador.tablero.aplicar_tema(tema)
-        jugador.tablero.distribuir_fichas_aleatoriamente()
-        return jugador.tablero.mostrar_tablero()
+    def autenticar_jugador(self, nombre_usuario, contraseña):
+        return Jugador.autenticar(nombre_usuario, contraseña)
+
+    def iniciar_juego(self, jugador, dificultad, tema):
+        tablero = Tablero(dificultad, tema)
+        return tablero
+
+    def guardar_progreso(self, jugador, puntaje):
+        jugador.puntaje = puntaje
+        pass  # Se puede implementar un sistema de almacenamiento persistente
+
+# Clase Juego: Maneja el flujo de una partida
+class Juego:
+    def __init__(self, jugador, dificultad, tema):
+        self.jugador = jugador
+        self.tablero = Tablero(dificultad, tema)
+
+    def jugar(self):
+        pass  # Se implementará en requisitos funcionales posteriores
+
+    def verificar_pareja(self):
+        pass  # Se implementará en requisitos funcionales posteriores
+
+    def mostrar_puntuacion(self):
+        pass  # Se implementará en requisitos funcionales posteriores
